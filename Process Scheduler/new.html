@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Process Synchronization</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #1a1a2e;
+      color: #f0f0f0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #162447;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    h1 {
+      text-align: center;
+      color: #e43f5a;
+    }
+
+    .input-section, .output-section {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: inline-block;
+      width: 140px;
+      margin-bottom: 10px;
+    }
+
+    input, select, button {
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #e43f5a;
+      border-radius: 4px;
+      background-color: #1f4068;
+      color: #f0f0f0;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #e43f5a;
+    }
+
+    .process-list {
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid #e43f5a;
+      background-color: #1f4068;
+      border-radius: 4px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .gantt-chart {
+      margin-top: 20px;
+      background-color: #0f3460;
+      padding: 10px;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+
+    .gantt-bar {
+      position: relative;
+      height: 30px;
+      margin: 5px 0;
+      background-color: #e43f5a;
+      border-radius: 4px;
+      color: #fff;
+      text-align: center;
+      line-height: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Process Synchronization</h1>
+
+    <div class="input-section">
+      <h2>Add Process</h2>
+      <label for="process-id">Process ID:</label>
+      <input type="text" id="process-id" placeholder="P1"><br>
+      <label for="critical-time">Critical Section Time:</label>
+      <input type="number" id="critical-time" placeholder="Enter Critical Time"><br>
+      <label for="remainder-time">Remainder Section Time:</label>
+      <input type="number" id="remainder-time" placeholder="Enter Remainder Time"><br>
+      <button onclick="addProcess()">Add Process</button>
+    </div>
+
+    <div class="algorithm-section">
+      <h2>Select Algorithm</h2>
+      <select id="algorithm">
+        <option value="Mutex">Mutex</option>
+        <option value="Semaphore">Semaphore</option>
+        <option value="Monitor">Monitor</option>
+      </select>
+      <button onclick="scheduleProcesses()">Schedule</button>
+    </div>
+
+    <div class="process-list">
+      <h3>Processes:</h3>
+      <ul id="process-list"></ul>
+    </div>
+
+    <div class="output-section">
+      <h2>Output</h2>
+      <div id="output"></div>
+      <div class="gantt-chart" id="gantt-chart">
+        <h3>Gantt Chart</h3>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let processes = [];
+
+    function addProcess() {
+      const processId = document.getElementById('process-id').value;
+      const criticalTime = parseInt(document.getElementById('critical-time').value);
+      const remainderTime = parseInt(document.getElementById('remainder-time').value);
+
+      if (processId && criticalTime && remainderTime) {
+        processes.push({ id: processId, criticalTime, remainderTime });
+        updateProcessList();
+        document.getElementById('process-id').value = '';
+        document.getElementById('critical-time').value = '';
+        document.getElementById('remainder-time').value = '';
+      } else {
+        alert('Please fill in all fields');
+      }
+    }
+
+    function updateProcessList() {
+      const processList = document.getElementById('process-list');
+      processList.innerHTML = '';
+
+      processes.forEach((process, index) => {
+        const li = document.createElement('li');
+        li.textContent = `${process.id}: Critical=${process.criticalTime}s, Remainder=${process.remainderTime}s`;
+        processList.appendChild(li);
+      });
+    }
+
+    function scheduleProcesses() {
+      const algorithm = document.getElementById('algorithm').value;
+      const output = document.getElementById('output');
+      const ganttChart = document.getElementById('gantt-chart');
+
+      output.innerHTML = `<p>Algorithm: ${algorithm}</p>`;
+      ganttChart.innerHTML = '<h3>Gantt Chart</h3>';
+
+      let startTime = 0;
+      processes.forEach(process => {
+        const criticalBar = document.createElement('div');
+        criticalBar.className = 'gantt-bar';
+        criticalBar.style.width = `${process.criticalTime * 10}px`;
+        criticalBar.style.marginLeft = `${startTime * 10}px`;
+        criticalBar.textContent = `${process.id} (Critical)`;
+        ganttChart.appendChild(criticalBar);
+
+        startTime += process.criticalTime;
+
+        const remainderBar = document.createElement('div');
+        remainderBar.className = 'gantt-bar';
+        remainderBar.style.width = `${process.remainderTime * 10}px`;
+        remainderBar.style.marginLeft = `${startTime * 10}px`;
+        remainderBar.textContent = `${process.id} (Remainder)`;
+        ganttChart.appendChild(remainderBar);
+
+        startTime += process.remainderTime;
+      });
+    }
+  </script>
+</body>
+</html>

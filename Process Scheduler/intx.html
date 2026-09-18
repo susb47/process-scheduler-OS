@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sarcasm Detector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .text-box {
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 16px;
+            resize: none;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .output {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sarcasm Detector</h1>
+        <div class="text-box">
+            <label for="input-text">Paste Bangla Text:</label>
+            <textarea id="input-text" placeholder="Type or paste Bangla text here..."></textarea>
+        </div>
+        <button onclick="detectSarcasm()">Check Sarcasm</button>
+        <div id="output-box" class="output">Output will appear here...</div>
+    </div>
+
+    <script>
+        function detectSarcasm() {
+            const inputText = document.getElementById('input-text').value;
+            const outputBox = document.getElementById('output-box');
+
+            // Placeholder logic for sarcasm detection
+            if (inputText.trim() === "") {
+                outputBox.textContent = "Please enter some text.";
+                return;
+            }
+
+            // Example mock result
+            const isSarcastic = Math.random() > 0.5; // Replace with real logic
+            outputBox.textContent = isSarcastic ? "Sarcastic" : "Not Sarcastic";
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deadlock Detection</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #1a1a2e;
+      color: #f0f0f0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #162447;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    h1 {
+      text-align: center;
+      color: #e43f5a;
+    }
+
+    .input-section, .output-section {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: inline-block;
+      width: 140px;
+      margin-bottom: 10px;
+    }
+
+    input, button {
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #e43f5a;
+      border-radius: 4px;
+      background-color: #1f4068;
+      color: #f0f0f0;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #e43f5a;
+    }
+
+    .resource-table {
+      margin: 10px 0;
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    .resource-table th, .resource-table td {
+      border: 1px solid #e43f5a;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .resource-table th {
+      background-color: #1f4068;
+    }
+
+    .gantt-chart {
+      margin-top: 20px;
+      background-color: #0f3460;
+      padding: 10px;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+
+    .gantt-bar {
+      position: relative;
+      height: 30px;
+      margin: 5px 0;
+      background-color: #e43f5a;
+      border-radius: 4px;
+      color: #fff;
+      text-align: center;
+      line-height: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Deadlock Detection</h1>
+
+    <div class="input-section">
+      <h2>Input Resources</h2>
+      <label for="num-processes">Number of Processes:</label>
+      <input type="number" id="num-processes" placeholder="Enter number"><br>
+      <label for="num-resources">Number of Resources:</label>
+      <input type="number" id="num-resources" placeholder="Enter number"><br>
+      <button onclick="generateTables()">Generate Tables</button>
+
+      <div id="tables-section"></div>
+    </div>
+
+    <div class="output-section">
+      <h2>Output</h2>
+      <div id="output"></div>
+      <div class="gantt-chart" id="gantt-chart">
+        <h3>Safe Sequence Chart</h3>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let numProcesses = 0;
+    let numResources = 0;
+
+    function generateTables() {
+      numProcesses = parseInt(document.getElementById('num-processes').value);
+      numResources = parseInt(document.getElementById('num-resources').value);
+
+      if (numProcesses > 0 && numResources > 0) {
+        const tablesSection = document.getElementById('tables-section');
+        tablesSection.innerHTML = '';
+
+        let html = '<h3>Allocation Table</h3>';
+        html += generateTable('allocation');
+
+        html += '<h3>Maximum Table</h3>';
+        html += generateTable('maximum');
+
+        html += '<h3>Available Resources</h3>';
+        html += '<table class="resource-table"><tr>';
+        for (let i = 0; i < numResources; i++) {
+          html += `<th>R${i + 1}</th>`;
+        }
+        html += '</tr><tr>';
+        for (let i = 0; i < numResources; i++) {
+          html += `<td><input type="number" id="available-${i}" value="0"></td>`;
+        }
+        html += '</tr></table>';
+
+        html += '<button onclick="detectDeadlock()">Detect Deadlock</button>';
+        tablesSection.innerHTML = html;
+      } else {
+        alert('Please enter valid numbers for processes and resources.');
+      }
+    }
+
+    function generateTable(prefix) {
+      let html = '<table class="resource-table">';
+      html += '<tr><th>Process</th>';
+      for (let i = 0; i < numResources; i++) {
+        html += `<th>R${i + 1}</th>`;
+      }
+      html += '</tr>';
+
+      for (let i = 0; i < numProcesses; i++) {
+        html += `<tr><td>P${i}</td>`;
+        for (let j = 0; j < numResources; j++) {
+          html += `<td><input type="number" id="${prefix}-${i}-${j}" value="0"></td>`;
+        }
+        html += '</tr>';
+      }
+      html += '</table>';
+      return html;
+    }
+
+    function detectDeadlock() {
+      const allocation = [];
+      const maximum = [];
+      const available = [];
+
+      for (let i = 0; i < numProcesses; i++) {
+        allocation[i] = [];
+        maximum[i] = [];
+        for (let j = 0; j < numResources; j++) {
+          allocation[i][j] = parseInt(document.getElementById(`allocation-${i}-${j}`).value);
+          maximum[i][j] = parseInt(document.getElementById(`maximum-${i}-${j}`).value);
+        }
+      }
+
+      for (let i = 0; i < numResources; i++) {
+        available[i] = parseInt(document.getElementById(`available-${i}`).value);
+      }
+
+      const safeSequence = calculateSafeSequence(allocation, maximum, available);
+
+      const output = document.getElementById('output');
+      const ganttChart = document.getElementById('gantt-chart');
+
+      if (safeSequence) {
+        output.innerHTML = `<p>Safe Sequence: ${safeSequence.join(' -> ')}</p>`;
+        ganttChart.innerHTML = '<h3>Safe Sequence Chart</h3>';
+        safeSequence.forEach(process => {
+          const bar = document.createElement('div');
+          bar.className = 'gantt-bar';
+          bar.style.width = '100px';
+          bar.textContent = process;
+          ganttChart.appendChild(bar);
+        });
+      } else {
+        output.innerHTML = '<p style="color: red;">No safe sequence found. System is in deadlock.</p>';
+        ganttChart.innerHTML = '';
+      }
+    }
+
+    function calculateSafeSequence(allocation, maximum, available) {
+      const need = allocation.map((allocRow, i) =>
+        allocRow.map((allocVal, j) => maximum[i][j] - allocVal)
+      );
+
+      const work = [...available];
+      const finish = Array(numProcesses).fill(false);
+      const safeSequence = [];
+
+      let found;
+      do {
+        found = false;
+        for (let i = 0; i < numProcesses; i++) {
+          if (!finish[i] && need[i].every((needVal, j) => needVal <= work[j])) {
+            found = true;
+            finish[i] = true;
+            safeSequence.push(`P${i}`);
+            need[i].forEach((_, j) => (work[j] += allocation[i][j]));
+          }
+        }
+      } while (found);
+
+      return finish.every(Boolean) ? safeSequence : null;
+    }
+  </script>
+</body>
+</html>
